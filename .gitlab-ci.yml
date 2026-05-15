@@ -1,0 +1,9 @@
+include:
+  - project: "hackathon/platform-admin"
+    ref: "main"
+    file: "/.gitlab-ci.yml"
+
+variables:
+  DOCKERFILE_PATH: "Dockerfile"
+  ENABLE_OPS_BUTTONS: "yes"
+

@@ -1,0 +1,1 @@
+"""Minimal ArenaGo trading bot."""
