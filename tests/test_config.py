@@ -23,6 +23,17 @@ def test_sandbox_api_key_is_supported_for_cloud(monkeypatch):
     assert config.api_token == "sandbox-token"
 
 
+def test_api_key_values_are_stripped(monkeypatch):
+    monkeypatch.delenv("ARENAGO_API_KEY", raising=False)
+    monkeypatch.delenv("ARENAGO_API_TOKEN", raising=False)
+    monkeypatch.delenv("POLZA_API_KEY", raising=False)
+    monkeypatch.setenv("SANDBOX_API_KEY", "sandbox-token\r\n")
+
+    config = BotConfig.from_env()
+
+    assert config.api_token == "sandbox-token"
+
+
 def test_polza_key_is_not_used_as_trading_token(monkeypatch):
     monkeypatch.delenv("ARENAGO_API_KEY", raising=False)
     monkeypatch.delenv("ARENAGO_API_TOKEN", raising=False)

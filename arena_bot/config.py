@@ -9,6 +9,13 @@ def _parse_bool(value: str | None, default: bool) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
+def _clean_secret(value: str | None) -> str | None:
+    if value is None:
+        return None
+    cleaned = value.strip()
+    return cleaned or None
+
+
 def load_env_file(path: str | Path = ".env") -> None:
     env_path = Path(path)
     if not env_path.exists():
@@ -40,7 +47,7 @@ class BotConfig:
 
     @classmethod
     def from_env(cls) -> "BotConfig":
-        api_token = (
+        api_token = _clean_secret(
             os.getenv("ARENAGO_API_KEY")
             or os.getenv("SANDBOX_API_KEY")
             or os.getenv("ARENAGO_API_TOKEN")
