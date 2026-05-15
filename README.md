@@ -43,6 +43,8 @@ Copy `.env.example` values into your runtime environment.
 | `INTERVAL_HOURS` | `12` | Minimum time between orders. |
 | `ERROR_SLEEP_SECONDS` | `900` | Backoff after failed API/network cycle. |
 | `STATE_PATH` | `/data/state.json` | Persistent state path. |
+| `LOG_FILE` | empty locally, `/data/bot.log` in Docker | Optional persistent log copy. |
+| `LOG_WEBHOOK_URL` | empty | Optional webhook for startup/cycle/error events. |
 
 ## Cloud Deploy
 

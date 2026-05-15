@@ -61,6 +61,8 @@ Docker/cloud default:
 - `ORDER_QUANTITY=1`;
 - `INTERVAL_HOURS=12`;
 - `STATE_PATH=/data/state.json`.
+- `LOG_FILE=/data/bot.log`.
+- optional `LOG_WEBHOOK_URL` for external event copies.
 
 This means the deployed container is intended to submit one SBER market order every 12 hours when `SANDBOX_API_KEY` is present.
 

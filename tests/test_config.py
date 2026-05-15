@@ -67,3 +67,19 @@ def test_config_reads_error_sleep_seconds(monkeypatch):
     config = BotConfig.from_env()
 
     assert config.error_sleep_seconds == 900
+
+
+def test_config_reads_log_file(monkeypatch):
+    monkeypatch.setenv("LOG_FILE", "/data/bot.log")
+
+    config = BotConfig.from_env()
+
+    assert config.log_file == "/data/bot.log"
+
+
+def test_config_reads_log_webhook_url(monkeypatch):
+    monkeypatch.setenv("LOG_WEBHOOK_URL", "https://webhook.site/example")
+
+    config = BotConfig.from_env()
+
+    assert config.log_webhook_url == "https://webhook.site/example"

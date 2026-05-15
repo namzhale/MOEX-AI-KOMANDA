@@ -44,6 +44,8 @@ class BotConfig:
     secid: str = "SBER"
     loop_forever: bool = True
     error_sleep_seconds: int = 900
+    log_file: str | None = None
+    log_webhook_url: str | None = None
 
     @classmethod
     def from_env(cls) -> "BotConfig":
@@ -63,4 +65,6 @@ class BotConfig:
             secid=os.getenv("SECID", "SBER"),
             loop_forever=_parse_bool(os.getenv("LOOP_FOREVER"), True),
             error_sleep_seconds=int(os.getenv("ERROR_SLEEP_SECONDS", "900")),
+            log_file=os.getenv("LOG_FILE") or None,
+            log_webhook_url=_clean_secret(os.getenv("LOG_WEBHOOK_URL")),
         )
