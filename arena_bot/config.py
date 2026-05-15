@@ -36,6 +36,7 @@ class BotConfig:
     api_base_url: str = "https://arenago.ru"
     secid: str = "SBER"
     loop_forever: bool = True
+    error_sleep_seconds: int = 900
 
     @classmethod
     def from_env(cls) -> "BotConfig":
@@ -54,4 +55,5 @@ class BotConfig:
             api_base_url=os.getenv("ARENAGO_API_BASE_URL", "https://arenago.ru"),
             secid=os.getenv("SECID", "SBER"),
             loop_forever=_parse_bool(os.getenv("LOOP_FOREVER"), True),
+            error_sleep_seconds=int(os.getenv("ERROR_SLEEP_SECONDS", "900")),
         )

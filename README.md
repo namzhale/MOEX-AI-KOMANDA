@@ -41,6 +41,7 @@ Copy `.env.example` values into your runtime environment.
 | `SECID` | `SBER` | Security code to trade. |
 | `ORDER_QUANTITY` | `1` | Number of shares per cycle. |
 | `INTERVAL_HOURS` | `12` | Minimum time between orders. |
+| `ERROR_SLEEP_SECONDS` | `900` | Backoff after failed API/network cycle. |
 | `STATE_PATH` | `/data/state.json` | Persistent state path. |
 
 ## Cloud Deploy

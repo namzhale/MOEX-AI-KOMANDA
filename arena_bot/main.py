@@ -26,7 +26,10 @@ def main() -> None:
             result = run_once(config, client, state_store)
             logging.info("Cycle finished with status=%s reason=%s", result.status, result.reason)
         except Exception:
-            logging.exception("Cycle failed")
+            logging.exception("Cycle failed; sleeping %s seconds before retry", config.error_sleep_seconds)
+            if config.loop_forever:
+                time.sleep(config.error_sleep_seconds)
+                continue
 
         if not config.loop_forever:
             break

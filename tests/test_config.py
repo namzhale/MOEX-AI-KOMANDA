@@ -48,3 +48,11 @@ def test_load_env_file_sets_missing_values_without_overriding_existing(tmp_path,
 
     assert BotConfig.from_env().api_token == "from-file"
     assert BotConfig.from_env().bot_name == "ExistingBot"
+
+
+def test_config_reads_error_sleep_seconds(monkeypatch):
+    monkeypatch.setenv("ERROR_SLEEP_SECONDS", "900")
+
+    config = BotConfig.from_env()
+
+    assert config.error_sleep_seconds == 900
