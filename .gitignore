@@ -51,8 +51,6 @@ data/backtest_cache/
 /.ocr_deps/
 /habr_article/tmp/
 /local_log_catcher/
-/reports/
-/research/
 /team-24-develop_reflection/
-/CHEAP_MODEL_EVAL.md
 /tests/test_local_log_catcher.py
+/research/*.txt
