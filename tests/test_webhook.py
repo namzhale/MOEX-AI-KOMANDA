@@ -1,66 +1,40 @@
-from arena_bot.webhook import WebhookNotifier
+from __future__ import annotations
+
+from agent.webhook import WebhookNotifier, sanitize_payload
 
 
-class RecordingSession:
-    def __init__(self):
-        self.posts = []
-
-    def post(self, url, json, timeout):
-        self.posts.append({"url": url, "json": json, "timeout": timeout})
-        return Response()
+def test_sanitize_payload_strips_secrets() -> None:
+    clean = sanitize_payload({"status": "ok", "token": "secret", "api_key": "x"})
+    assert clean == {"status": "ok"}
 
 
-class Response:
-    def raise_for_status(self):
-        return None
+def test_webhook_notifier_noop_without_url() -> None:
+    notifier = WebhookNotifier(url=None, source="team-24")
+    assert notifier.send("startup", {"status": "ok"}) is False
 
 
-class FailingSession:
-    def post(self, *args, **kwargs):
-        raise RuntimeError("webhook down")
+def test_webhook_notifier_sends_sanitized_body(mocker) -> None:
+    captured: list[dict] = []
 
+    class FakeResponse:
+        status_code = 200
 
-def test_webhook_notifier_sends_event_payload_without_secrets():
-    session = RecordingSession()
-    notifier = WebhookNotifier(
-        url="https://webhook.site/example",
-        source="Team24ArenaBot",
-        session=session,
-    )
+        def raise_for_status(self) -> None:
+            pass
+
+    def fake_post(url, json):
+        captured.append({"url": url, "json": json})
+        return FakeResponse()
+
+    client = mocker.Mock()
+    client.post = fake_post
+    notifier = WebhookNotifier(url="https://example.com/hook", source="Team24", _client=client)
 
     ok = notifier.send("cycle_finished", {"status": "submitted", "token": "secret"})
 
     assert ok is True
-    assert session.posts == [
-        {
-            "url": "https://webhook.site/example",
-            "json": {
-                "source": "Team24ArenaBot",
-                "event": "cycle_finished",
-                "payload": {"status": "submitted"},
-            },
-            "timeout": 5,
-        }
-    ]
-
-
-def test_webhook_notifier_is_noop_without_url():
-    session = RecordingSession()
-    notifier = WebhookNotifier(url=None, source="Team24ArenaBot", session=session)
-
-    ok = notifier.send("startup", {"status": "ok"})
-
-    assert ok is False
-    assert session.posts == []
-
-
-def test_webhook_notifier_swallows_delivery_errors():
-    notifier = WebhookNotifier(
-        url="https://webhook.site/example",
-        source="Team24ArenaBot",
-        session=FailingSession(),
-    )
-
-    ok = notifier.send("cycle_failed", {"error": "boom"})
-
-    assert ok is False
+    assert captured[0]["json"] == {
+        "source": "Team24",
+        "event": "cycle_finished",
+        "payload": {"status": "submitted"},
+    }

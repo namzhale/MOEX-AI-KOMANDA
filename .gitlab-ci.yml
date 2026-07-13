@@ -5,5 +5,3 @@ include:
 
 variables:
   DOCKERFILE_PATH: "Dockerfile"
-  ENABLE_OPS_BUTTONS: "yes"
-

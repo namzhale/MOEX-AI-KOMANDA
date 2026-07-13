@@ -1,0 +1,44 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.12.5
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./data/qdrant:/qdrant/storage
+    restart: unless-stopped
+
+  agent:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      AGENT_MODE: trading
+      AGENT_INTERVAL: "10"
+      MARKET_DATA_SOURCE: algopack
+      ALGOPACK_FLOW_ENABLED: "true"
+      DRY_RUN: "true"
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_ENABLED: "true"
+      REFLECTION_IN_GRAPH: "true"
+    depends_on:
+      - qdrant
+    volumes:
+      - ./data:/data
+      - ./src:/app/src
+    restart: unless-stopped
+
+  # One-shot short verification (SELL → wait → BUY). Profile: short-check
+  short-check:
+    build: .
+    profiles: ["short-check"]
+    env_file: .env
+    environment:
+      AGENT_ENABLED: "false"
+      DRY_RUN: "false"
+      SHORT_CHECK_SECID: AUTO
+    command: ["python", "-m", "agent.runtime.short_check_main"]
+    volumes:
+      - ./data:/data
+      - ./src:/app/src
+    restart: "no"
