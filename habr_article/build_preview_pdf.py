@@ -14,7 +14,9 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     Image,
+    KeepTogether,
     Paragraph,
+    Preformatted,
     SimpleDocTemplate,
     Spacer,
 )
@@ -61,6 +63,7 @@ def make_styles():
             textColor=colors.HexColor("#111827"),
             spaceBefore=18,
             spaceAfter=8,
+            keepWithNext=True,
         )
     )
     base.add(
@@ -99,6 +102,22 @@ def make_styles():
             firstLineIndent=0,
             bulletIndent=0,
             spaceAfter=3,
+        )
+    )
+    base.add(
+        ParagraphStyle(
+            name="CodeRu",
+            parent=base["Code"],
+            fontName="ArticleRegular",
+            fontSize=8.4,
+            leading=11.5,
+            leftIndent=4 * mm,
+            rightIndent=4 * mm,
+            borderPadding=7,
+            backColor=colors.HexColor("#f1f5f9"),
+            textColor=colors.HexColor("#0f172a"),
+            spaceBefore=4,
+            spaceAfter=10,
         )
     )
     base.add(
@@ -167,6 +186,8 @@ def build_story(markdown: str, styles) -> list:
     paragraph_lines: list[str] = []
     bullet_items: list[str] = []
     numbered_items: list[str] = []
+    code_lines: list[str] = []
+    in_code_block = False
     max_image_width = 170 * mm
     max_image_height = 105 * mm
 
@@ -202,6 +223,21 @@ def build_story(markdown: str, styles) -> list:
         line = raw.rstrip()
         stripped = line.strip()
 
+        if stripped.startswith("```"):
+            flush_all()
+            if in_code_block:
+                code = "\n".join(code_lines)
+                story.append(KeepTogether([Preformatted(code, styles["CodeRu"])]))
+                code_lines = []
+                in_code_block = False
+            else:
+                in_code_block = True
+            continue
+
+        if in_code_block:
+            code_lines.append(line)
+            continue
+
         if not stripped or stripped == "<cut />":
             flush_all()
             continue
@@ -210,10 +246,13 @@ def build_story(markdown: str, styles) -> list:
         if image_match:
             flush_all()
             alt, path = image_match.group(1), image_match.group(2)
-            story.append(Spacer(1, 8))
-            story.append(image_flowable(path, alt, max_image_width, max_image_height))
+            image_block = [
+                Spacer(1, 8),
+                image_flowable(path, alt, max_image_width, max_image_height),
+            ]
             if alt:
-                story.append(Paragraph(inline_markup(alt), styles["CaptionRu"]))
+                image_block.append(Paragraph(inline_markup(alt), styles["CaptionRu"]))
+            story.append(KeepTogether(image_block))
             continue
 
         if stripped.startswith("# "):
@@ -248,6 +287,9 @@ def build_story(markdown: str, styles) -> list:
         flush_numbered()
         paragraph_lines.append(stripped)
 
+    if in_code_block and code_lines:
+        code = "\n".join(code_lines)
+        story.append(KeepTogether([Preformatted(code, styles["CodeRu"])]))
     flush_all()
     return story
 
@@ -256,7 +298,7 @@ def draw_footer(canvas, doc) -> None:
     canvas.saveState()
     canvas.setFont("ArticleRegular", 8)
     canvas.setFillColor(colors.HexColor("#94a3b8"))
-    canvas.drawCentredString(A4[0] / 2, 10 * mm, f"MOEX AI Hackathon LLM Agent - preview - {doc.page}")
+    canvas.drawCentredString(A4[0] / 2, 10 * mm, f"MOEX AI Hackathon - team 24 - {doc.page}")
     canvas.restoreState()
 
 
@@ -273,7 +315,7 @@ def main() -> None:
         leftMargin=18 * mm,
         topMargin=18 * mm,
         bottomMargin=18 * mm,
-        title="MOEX AI Hackathon LLM Agent",
+        title="Мы отправили LLM торговать на Мосбиржу",
         author="team-24",
     )
     doc.build(story, onFirstPage=draw_footer, onLaterPages=draw_footer)
